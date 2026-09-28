@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Burkhold Apps</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0c;--bg-soft:#111114;--card:#16161a;--white:#fafafa;--gray:#9a9aa3;--gray-dim:#5d5d66;--indigo:#6366f1;--indigo-soft:#818cf8;--cyan:#22d3ee;--line:#23232a;--success:#4ade80;--warning:#fbbf24;--error:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+.brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;background:linear-gradient(135deg,var(--indigo-soft),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+.who{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--gray);flex-wrap:wrap}
+.badge{padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:rgba(99,102,241,.14);color:var(--indigo-soft)}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--white);padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;transition:all .2s}
+.btn:hover{border-color:var(--indigo)}
+.btn-primary{background:linear-gradient(135deg,var(--indigo),#4f46e5);border:none;color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.3)}
+.btn-danger{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.35);color:var(--error)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+nav.tabs{display:flex;gap:4px;padding:0 32px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav.tabs button{background:none;border:none;color:var(--gray);padding:14px 14px;font-size:14px;font-weight:600;border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs button.active{color:var(--white);border-bottom-color:var(--indigo)}
+main{max-width:1200px;margin:0 auto;padding:28px 32px}
+.section-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+h2{font-family:'Space Grotesk',sans-serif;font-size:24px}
+.muted{color:var(--gray);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:6px}
+.card .title{font-weight:700;font-size:16px}
+.card .svc{color:var(--indigo-soft);font-size:14px}
+.card .amt{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;margin-top:6px}
+.status{display:inline-block;width:fit-content;padding:3px 9px;border-radius:6px;font-size:12px;font-weight:600;background:rgba(99,102,241,.12);color:var(--indigo-soft)}
+.status.completed,.status.paid{background:rgba(74,222,128,.12);color:var(--success)}
+.status.in-progress,.status.scheduled{background:rgba(251,191,36,.12);color:var(--warning)}
+.status.invoiced{background:rgba(34,211,238,.12);color:var(--cyan)}
+.card-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.card-actions .btn{flex:1;padding:7px}
+.empty{text-align:center;padding:60px 20px;color:var(--gray)}
+.list{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.row:last-child{border-bottom:none}
+.row .actions{display:flex;gap:8px}
+.inactive{opacity:.5}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;max-width:480px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(5,5,7,.85);z-index:100;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.overlay.open{display:flex}
+.modal{background:var(--bg-soft);border:1px solid var(--line);border-radius:16px;width:100%;max-width:460px;max-height:92vh;overflow-y:auto;padding:28px}
+.modal h3{font-family:'Space Grotesk',sans-serif;font-size:20px;margin-bottom:18px}
+label{display:block;font-size:13px;font-weight:600;color:var(--gray);margin:0 0 6px}
+input,select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-family:inherit;font-size:14px;color:var(--white);outline:none;margin-bottom:14px}
+input:focus,select:focus{border-color:var(--indigo)}
+.form-actions{display:flex;gap:10px;margin-top:8px}
+.form-actions .btn{flex:1;padding:11px}
+.msg{font-size:13px;padding:10px 12px;border-radius:8px;margin-bottom:14px;display:none}
+.msg.err{display:block;background:rgba(239,68,68,.1);color:var(--error);border-left:3px solid var(--error)}
+.msg.ok{display:block;background:rgba(74,222,128,.1);color:var(--success);border-left:3px solid var(--success)}
+.pin-reveal{font-family:'Space Grotesk',monospace;font-size:28px;letter-spacing:.2em;text-align:center;padding:14px;background:var(--card);border-radius:10px;margin:10px 0}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);padding:12px 18px;border-radius:10px;font-size:14px;display:none;z-index:200}
+.net{font-size:12px;font-weight:600;padding:3px 9px;border-radius:6px}
+.net::before{content:'● '}
+.net.online{background:rgba(74,222,128,.1);color:var(--success)}
+.net.syncing{background:rgba(99,102,241,.14);color:var(--indigo-soft)}
+.net.offline{background:rgba(251,191,36,.12);color:var(--warning)}
+.pending{font-size:12px;color:var(--warning)}
+.offline-banner{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:var(--warning);padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:16px}
+@media(max-width:600px){header,main{padding-left:16px;padding-right:16px}nav.tabs{padding:0 8px}h2{font-size:20px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand" id="company-name">Burkhold Apps</div>
+  <div class="who">
+    <span id="user-email"></span>
+    <span class="net online" id="net-status">Online</span>
+    <span class="badge" id="user-role"></span>
+    <button class="btn" id="logout-btn">Log out</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="jobs" class="active">Jobs</button>
+  <button data-tab="team">Team</button>
+  <button data-tab="activity" data-roles="owner,manager">Activity</button>
+  <button data-tab="account">Account</button>
+</nav>
+
+<main>
+  <section id="tab-jobs">
+    <div class="section-top"><h2>Jobs</h2><button class="btn btn-primary" id="new-job-btn">+ New Job</button></div>
+    <div id="jobs"><div class="empty">Loading…</div></div>
+  </section>
+
+  <section id="tab-team" hidden>
+    <div class="section-top">
+      <div><h2>Team</h2><div class="muted">Everyone gets their own login. Up to 20 people.</div></div>
+      <button class="btn btn-primary" id="add-member-btn" data-roles="owner,manager">+ Add Member</button>
+    </div>
+    <div id="team" class="list"></div>
+  </section>
+
+  <section id="tab-activity" hidden>
+    <div class="section-top"><div><h2>Activity</h2><div class="muted">Last 100 actions by your team</div></div></div>
+    <div id="activity" class="list"></div>
+  </section>
+
+  <section id="tab-account" hidden>
+    <div class="section-top"><h2>Account</h2></div>
+    <div class="panel">
+      <h3 style="font-family:'Space Grotesk',sans-serif;margin-bottom:6px">Set a password</h3>
+      <p class="muted" style="margin-bottom:16px">Optional. Once set you can log in with either your PIN or your password. Other devices will be signed out.</p>
+      <div class="msg" id="pw-msg"></div>
+      <form id="pw-form">
+        <label for="pw-current">Current PIN or password</label>
+        <input type="password" id="pw-current" autocomplete="current-password" required>
+        <label for="pw-new">New password (10+ characters, not only numbers)</label>
+        <input type="password" id="pw-new" autocomplete="new-password" minlength="10" required>
+        <button class="btn btn-primary" type="submit" style="width:100%;padding:11px">Save password</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<!-- Job modal -->
+<div class="overlay" id="job-overlay">
+  <div class="modal">
+    <h3 id="job-modal-title">New Job</h3>
+    <div class="msg" id="job-msg"></div>
+    <form id="job-form">
+      <label for="job-customer">Customer name *</label>
+      <input id="job-customer" maxlength="200" required placeholder="e.g. John Smith">
+      <label for="job-service">Service *</label>
+      <input id="job-service" maxlength="200" required placeholder="e.g. AC Repair">
+      <label for="job-amount">Amount ($) *</label>
+      <input id="job-amount" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="450">
+      <label for="job-status">Status</label>
+      <select id="job-status">
+        <option value="open">Open</option><option value="scheduled">Scheduled</option>
+        <option value="in-progress">In Progress</option><option value="completed">Completed</option>
+        <option value="invoiced">Invoiced</option><option value="paid">Paid</option>
+      </select>
+      <div class="form-actions">
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="job-save">Save Job</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Member modal -->
+<div class="overlay" id="member-overlay">
+  <div class="modal">
+    <h3>Add Team Member</h3>
+    <div class="msg" id="member-msg"></div>
+    <form id="member-form">
+      <label for="member-email">Email *</label>
+      <input id="member-email" type="email" required placeholder="mike@company.com">
+      <label for="member-role">Role</label>
+      <select id="member-role">
+        <option value="tech">Tech — sees all jobs, edits only their own, can't delete</option>
+        <option value="manager">Manager — full job access, can manage techs</option>
+      </select>
+      <div class="form-actions">
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="member-save">Add &amp; email PIN</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- One-time PIN reveal (only when email delivery isn't available) -->
+<div class="overlay" id="pin-overlay">
+  <div class="modal">
+    <h3>Share this PIN privately</h3>
+    <p class="muted">Email isn't set up, so give this PIN to <strong id="pin-for"></strong> in person or by text. It won't be shown again.</p>
+    <div class="pin-reveal" id="pin-value"></div>
+    <div class="form-actions"><button class="btn btn-primary" data-close>Done</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = 'https://burkhold-server.onrender.com';
+const STATUS_LABELS = {'open':'Open','scheduled':'Scheduled','in-progress':'In Progress','completed':'Completed','invoiced':'Invoiced','paid':'Paid'};
+const me = {
+  id: localStorage.getItem('user_id'),
+  email: localStorage.getItem('user_email'),
+  role: localStorage.getItem('user_role') || 'owner',
+  company: localStorage.getItem('company_name') || ''
+};
+let jobs = [];
+let jobsLoaded = false;
+let offlineCopy = false;   // true when showing the on-device copy because we're offline
+let editingJobId = null;
+
+// ---------- utilities ----------
+// Everything from the server is escaped before it touches innerHTML (prevents XSS token theft)
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const $ = id => document.getElementById(id);
+const isAdmin = () => me.role === 'owner' || me.role === 'manager';
+function toast(text){ const t=$('toast'); t.textContent=text; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',3000); }
+function showMsg(id, text, ok){ const el=$(id); el.textContent=text; el.className='msg '+(ok?'ok':'err'); }
+function clearMsg(id){ $(id).className='msg'; $(id).textContent=''; }
+function money(n){ return '$' + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function clearSessionAndExit(){
+  ['auth_token','refresh_token','user_id','user_email','user_role','company_name'].forEach(k => localStorage.removeItem(k));
+  window.location.replace('/index.html');
+}
+
+// ---------- API wrapper with automatic token refresh ----------
+let refreshing = null;
+async function refreshToken(){
+  const rt = localStorage.getItem('refresh_token');
+  if(!rt) return false;
+  let res;
+  try {
+    res = await fetch(API + '/api/auth/refresh', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({refresh_token: rt})
+    });
+  } catch(e){ return 'offline'; }   // no signal: keep the user logged in
+  if(!res.ok) return false;
+  const d = await res.json();
+  localStorage.setItem('auth_token', d.token);
+  localStorage.setItem('refresh_token', d.refresh_token);
+  localStorage.setItem('user_role', d.role);
+  me.role = d.role;
+  return true;
+}
+
+function offlineError(){ const err = new Error("You're offline. This needs a connection."); err.offline = true; return err; }
+
+async function api(path, options = {}, retried = false){
+  let res;
+  try {
+    res = await fetch(API + path, {
+      ...options,
+      headers: {'Content-Type':'application/json', 'Authorization':'Bearer ' + localStorage.getItem('auth_token'), ...(options.headers||{})}
+    });
+  } catch(e){ throw offlineError(); }
+  if(res.status === 401 && !retried){
+    refreshing = refreshing || refreshToken().finally(() => { refreshing = null; });
+    const ok = await refreshing;
+    if(ok === 'offline') throw offlineError();
+    if(ok) return api(path, options, true);
+    clearSessionAndExit();   // unsent changes stay saved on this device for this user's next login
+    throw new Error('Session ended');
+  }
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok){ const err = new Error(data.error || ('Request failed (' + res.status + ')')); err.status = res.status; throw err; }
+  return data;
+}
+
+// ---------- auth / header ----------
+if(!localStorage.getItem('auth_token') || !me.email){ clearSessionAndExit(); }
+$('user-email').textContent = me.email || '';
+$('company-name').textContent = me.company || 'Burkhold Apps';
+
+function applyRoleVisibility(){
+  $('user-role').textContent = me.role;
+  document.querySelectorAll('[data-roles]').forEach(el => {
+    el.hidden = !el.dataset.roles.split(',').includes(me.role);
+  });
+}
+
+$('logout-btn').addEventListener('click', async () => {
+  if(outbox.length && !confirm(outbox.length + " change(s) haven't synced yet and will be lost if you log out now. Log out anyway?")) return;
+  try { await api('/api/auth/logout', {method:'POST'}); } catch(e) { /* still clear locally */ }
+  localStorage.removeItem(OUTBOX_KEY);
+  localStorage.removeItem(JOBS_CACHE_KEY);   // don't leave customer names on a shared device
+  clearSessionAndExit();
+});
+
+// ---------- tabs ----------
+document.querySelectorAll('nav.tabs button').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b === btn));
+  ['jobs','team','activity','account'].forEach(t => $('tab-'+t).hidden = (t !== btn.dataset.tab));
+  if(btn.dataset.tab === 'team') loadTeam();
+  if(btn.dataset.tab === 'activity') loadActivity();
+}));
+
+// ---------- modals ----------
+function openOverlay(id){ $(id).classList.add('open'); }
+function closeOverlays(){ document.querySelectorAll('.overlay').forEach(o => o.classList.remove('open')); }
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeOverlays));
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if(e.target === o) closeOverlays(); }));
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeOverlays(); });
+
+// ---------- jobs + offline queue ----------
+// Every change is written to an on-device "outbox" first, shown immediately, then sent to
+// the server. With no signal the outbox just waits and is sent when the connection returns.
+// New jobs get an id generated on the device, so a retried send can never make a duplicate.
+const OUTBOX_KEY = 'outbox_' + me.email;
+const JOBS_CACHE_KEY = 'jobs_cache_' + me.email;
+function readLS(k, fallback){ try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch(e){ return fallback; } }
+function writeLS(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){ /* storage full/blocked */ } }
+let outbox = readLS(OUTBOX_KEY, []);
+const saveOutbox = () => writeLS(OUTBOX_KEY, outbox);
+
+function newId(){
+  if(crypto.randomUUID) return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+  const h = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+}
+
+// Mirrors the server rule: techs edit only jobs they created (server enforces this regardless)
+function canEdit(job){ return isAdmin() || (job.created_by || job.user_id) === me.id; }
+
+function applyLocal(op, id, body){
+  if(op === 'create'){
+    jobs = jobs.filter(j => j.id !== id);
+    jobs.unshift({id, ...body, amount: Number(body.amount), created_by: me.id, created_by_email: me.email, pending: true});
+  } else if(op === 'update'){
+    const j = jobs.find(x => x.id === id);
+    if(j) Object.assign(j, body, {amount: Number(body.amount ?? j.amount), pending: true});
+  } else if(op === 'delete'){
+    jobs = jobs.filter(j => j.id !== id);
+  }
+}
+
+function enqueue(op, id, body){
+  if(op === 'update'){
+    const earlier = outbox.find(i => i.id === id && (i.op === 'create' || i.op === 'update'));
+    if(earlier){ Object.assign(earlier.body, body); saveOutbox(); return; }
+  }
+  if(op === 'delete'){
+    const neverSent = outbox.some(i => i.id === id && i.op === 'create');
+    outbox = outbox.filter(i => i.id !== id);
+    if(neverSent){ saveOutbox(); return; }   // created and deleted offline: nothing to send
+  }
+  outbox.push({op, id, body: body || {}, ts: Date.now()});
+  saveOutbox();
+}
+
+function changeJob(op, id, body){
+  enqueue(op, id, body);
+  applyLocal(op, id, body);
+  writeLS(JOBS_CACHE_KEY, jobs);
+  renderJobs(); updateNetStatus();
+  syncOutbox();
+}
+
+let syncing = false;
+async function syncOutbox(){
+  if(syncing || !outbox.length) return;
+  syncing = true;
+  let sentSomething = false;
+  try {
+    while(outbox.length){
+      const item = outbox[0];
+      try {
+        if(item.op === 'create') await api('/api/jobs', {method:'POST', body: JSON.stringify({...item.body, id: item.id})});
+        if(item.op === 'update') await api('/api/jobs/' + encodeURIComponent(item.id), {method:'PUT', body: JSON.stringify(item.body)});
+        if(item.op === 'delete') await api('/api/jobs/' + encodeURIComponent(item.id), {method:'DELETE'});
+      } catch(err){
+        if(err.offline || (err.status || 0) >= 500) break;           // no signal / server hiccup: retry later
+        if(!(item.op === 'delete' && err.status === 404)) toast('A change could not be saved: ' + err.message);
+      }
+      outbox.shift(); saveOutbox(); sentSomething = true;
+    }
+  } finally {
+    syncing = false;
+    updateNetStatus();
+  }
+  if(sentSomething && !outbox.length) loadJobs();
+}
+
+async function loadJobs(){
+  try {
+    jobs = await api('/api/jobs');
+    offlineCopy = false;
+  } catch(e){
+    if(!e.offline){
+      $('jobs').innerHTML = '<div class="empty">Could not load jobs: ' + esc(e.message) + '</div>';
+      return;
+    }
+    jobs = readLS(JOBS_CACHE_KEY, []);
+    offlineCopy = true;
+  }
+  if(!offlineCopy) outbox.forEach(i => applyLocal(i.op, i.id, i.body)); // show unsent changes on top
+  writeLS(JOBS_CACHE_KEY, jobs);
+  jobsLoaded = true;
+  renderJobs(); updateNetStatus();
+}
+
+function updateNetStatus(){
+  const online = navigator.onLine && !offlineCopy;
+  const waiting = outbox.length;
+  const el = $('net-status');
+  el.className = 'net ' + (online ? (waiting ? 'syncing' : 'online') : 'offline');
+  el.textContent = (online ? (waiting ? 'Syncing' : 'Online') : 'Offline') + (waiting ? ` · ${waiting} waiting` : '');
+  el.title = waiting ? 'Changes saved on this device and will be sent when you have signal' : '';
+}
+
+function renderJobs(){
+  if(!jobsLoaded) return;
+  const banner = offlineCopy ? '<div class="offline-banner">You\'re offline. Showing the jobs saved on this device. New jobs and edits will sync when you reconnect.</div>' : '';
+  if(!jobs.length){
+    $('jobs').innerHTML = banner + '<div class="empty"><h3 style="color:var(--white);margin-bottom:6px">No jobs yet</h3>Create your first job to get started.</div>';
+    return;
+  }
+  $('jobs').innerHTML = banner + '<div class="grid">' + jobs.map(j => `
+    <div class="card">
+      <div class="title">${esc(j.customer_name)}</div>
+      <div class="svc">${esc(j.service)}</div>
+      <span class="status ${esc(j.status)}">${esc(STATUS_LABELS[j.status] || j.status)}</span>
+      <div class="amt">${esc(money(j.amount))}</div>
+      <div class="muted">Added by ${esc(j.created_by_email || 'unknown')}</div>
+      ${j.pending ? '<div class="pending">⏳ Saved on this device, not synced yet</div>' : ''}
+      ${(canEdit(j) || isAdmin()) ? `<div class="card-actions">
+        ${canEdit(j) ? `<button class="btn" data-edit="${esc(j.id)}">Edit</button>` : ''}
+        ${isAdmin() ? `<button class="btn btn-danger" data-delete="${esc(j.id)}">Delete</button>` : ''}
+      </div>` : ''}
+    </div>`).join('') + '</div>';
+}
+
+$('jobs').addEventListener('click', e => {
+  const editId = e.target.dataset.edit, delId = e.target.dataset.delete;
+  if(editId){
+    const j = jobs.find(x => x.id === editId);
+    if(!j) return;
+    editingJobId = editId;
+    $('job-modal-title').textContent = 'Edit Job';
+    $('job-customer').value = j.customer_name || '';
+    $('job-service').value = j.service || '';
+    $('job-amount').value = j.amount ?? '';
+    $('job-status').value = j.status || 'open';
+    clearMsg('job-msg');
+    openOverlay('job-overlay');
+  }
+  if(delId){
+    if(!confirm('Delete this job? This cannot be undone.')) return;
+    changeJob('delete', delId, null);
+    toast(navigator.onLine ? 'Job deleted' : 'Deleted on this device, will sync when you reconnect');
+  }
+});
+
+$('new-job-btn').addEventListener('click', () => {
+  editingJobId = null;
+  $('job-modal-title').textContent = 'New Job';
+  $('job-form').reset();
+  clearMsg('job-msg');
+  openOverlay('job-overlay');
+});
+
+$('job-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const body = {
+    customer_name: $('job-customer').value.trim(),
+    service: $('job-service').value.trim(),
+    amount: $('job-amount').value,
+    status: $('job-status').value
+  };
+  // Same checks as the server, so offline changes don't get rejected later
+  const amt = Number(body.amount);
+  if(!body.customer_name || !body.service) return showMsg('job-msg', 'Customer name and service are required');
+  if(body.amount === '' || !isFinite(amt) || amt < 0 || amt > 1000000) return showMsg('job-msg', 'Amount must be a number between 0 and 1,000,000');
+  body.amount = Math.round(amt * 100) / 100;
+  changeJob(editingJobId ? 'update' : 'create', editingJobId || newId(), body);
+  closeOverlays();
+  toast(navigator.onLine ? 'Job saved' : 'Saved on this device, will sync when you reconnect');
+});
+
+window.addEventListener('online', () => { offlineCopy = false; updateNetStatus(); syncOutbox().then(() => { if(!outbox.length) loadJobs(); }); });
+window.addEventListener('offline', updateNetStatus);
+setInterval(() => { if(outbox.length) syncOutbox(); }, 30000);  // navigator.onLine isn't always accurate
+
+// ---------- team ----------
+async function loadTeam(){
+  try {
+    const team = await api('/api/team');
+    $('team').innerHTML = team.map(m => {
+      const manageable = m.email !== me.email && m.role !== 'owner' && m.active &&
+        (me.role === 'owner' || (me.role === 'manager' && m.role === 'tech'));
+      return `<div class="row ${m.active ? '' : 'inactive'}">
+        <div><div>${esc(m.email)}${m.email === me.email ? ' <span class="muted">(you)</span>' : ''}</div>
+          <div class="muted">${esc(m.role)}${m.active ? '' : ' · removed'}</div></div>
+        ${manageable ? `<div class="actions">
+          <button class="btn" data-reset="${esc(m.id)}" data-email="${esc(m.email)}">Reset PIN</button>
+          <button class="btn btn-danger" data-remove="${esc(m.id)}" data-email="${esc(m.email)}">Remove</button>
+        </div>` : ''}
+      </div>`;
+    }).join('') || '<div class="row muted">No team members yet.</div>';
+  } catch(err){ $('team').innerHTML = '<div class="row">' + esc(err.message) + '</div>'; }
+}
+
+$('team').addEventListener('click', async e => {
+  const {reset, remove, email} = e.target.dataset;
+  try {
+    if(remove){
+      if(!confirm('Remove ' + email + '? They will be signed out immediately.')) return;
+      await api('/api/team/' + encodeURIComponent(remove), {method:'DELETE'});
+      toast(email + ' removed'); loadTeam();
+    }
+    if(reset){
+      if(!confirm('Reset PIN for ' + email + '? Their current PIN stops working.')) return;
+      const r = await api('/api/team/' + encodeURIComponent(reset) + '/reset-pin', {method:'POST'});
+      if(r.pin){ $('pin-for').textContent = email; $('pin-value').textContent = r.pin; openOverlay('pin-overlay'); }
+      else toast('New PIN emailed to ' + email);
+    }
+  } catch(err){ toast(err.message); }
+});
+
+$('add-member-btn').addEventListener('click', () => {
+  $('member-form').reset(); clearMsg('member-msg');
+  $('member-role').querySelector('[value=manager]').hidden = me.role !== 'owner';
+  openOverlay('member-overlay');
+});
+
+$('member-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('member-save'); btn.disabled = true;
+  const email = $('member-email').value.trim();
+  try {
+    const r = await api('/api/team', {method:'POST', body: JSON.stringify({email, role: $('member-role').value})});
+    closeOverlays(); loadTeam();
+    if(r.pin){ $('pin-for').textContent = email; $('pin-value').textContent = r.pin; openOverlay('pin-overlay'); }
+    else toast('PIN emailed to ' + email);
+  } catch(err){ showMsg('member-msg', err.message); }
+  finally { btn.disabled = false; }
+});
+
+// ---------- activity ----------
+const ACTION_LABELS = {login:'logged in',logout:'logged out',create_job:'created a job',update_job:'updated a job',delete_job:'deleted a job',
+  add_member:'added a team member',remove_member:'removed a team member',change_role:'changed a role',reset_pin:'reset a PIN',
+  set_password:'set a password',account_created:'created the account'};
+async function loadActivity(){
+  try {
+    const rows = await api('/api/audit');
+    $('activity').innerHTML = rows.map(a => `<div class="row">
+      <div><strong>${esc(a.user_email || 'system')}</strong> ${esc(ACTION_LABELS[a.action] || a.action)}
+        ${a.changes && a.changes.email ? '<span class="muted">(' + esc(a.changes.email) + ')</span>' : ''}</div>
+      <div class="muted">${esc(new Date(a.created_at).toLocaleString())}</div></div>`).join('')
+      || '<div class="row muted">No activity yet.</div>';
+  } catch(err){ $('activity').innerHTML = '<div class="row">' + esc(err.message) + '</div>'; }
+}
+
+// ---------- password ----------
+$('pw-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    await api('/api/auth/password', {method:'POST', body: JSON.stringify({
+      current_secret: $('pw-current').value, new_password: $('pw-new').value })});
+    $('pw-form').reset();
+    showMsg('pw-msg', 'Password saved. You can now log in with it or your PIN.', true);
+  } catch(err){ showMsg('pw-msg', err.message); }
+});
+
+// ---------- start ----------
+applyRoleVisibility();
+// Pull fresh role/company from the server (role may have changed since login)
+api('/api/auth/me').then(d => {
+  me.role = d.role; me.id = d.user_id; localStorage.setItem('user_id', d.user_id); me.company = d.company_name || me.company;
+  localStorage.setItem('user_role', d.role);
+  $('company-name').textContent = me.company || 'Burkhold Apps';
+  applyRoleVisibility(); renderJobs();
+}).catch(() => {});
+updateNetStatus();
+syncOutbox().finally(loadJobs);
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err)));
+}
+</script>
+</body>
+</html>
